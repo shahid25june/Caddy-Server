@@ -1,0 +1,9 @@
+# Doclin (D:\Doclin Claude\Doclin)
+doctolin.com, www.doctolin.com {
+	# www → apex is handled inside the Doclin app (canonical host redirect).
+	reverse_proxy doclin-app:8080
+}
+
+stage.doctolin.com {
+	reverse_proxy doclin-app-staging:8080
+}

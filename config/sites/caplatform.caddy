@@ -1,0 +1,20 @@
+# CA Platform
+(caplatform) {
+	# Its /internal/tls-ask endpoint is for Caddy only, never for visitors.
+	respond /internal/* 404
+	reverse_proxy caplatform:8080
+}
+
+# Main site (platform, super-admin) and the default firm — normal automatic certificates.
+ca.doctolin.com, cagowhar.doctolin.com {
+	import caplatform
+}
+
+# Firm subdomains ({firm}.ca.doctolin.com) — a certificate on the first visit, once CA Platform
+# confirms the firm exists. Firms' own custom domains still land in the SchoolMS catch-all.
+*.ca.doctolin.com {
+	tls {
+		on_demand
+	}
+	import caplatform
+}

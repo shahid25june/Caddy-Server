@@ -1,0 +1,9 @@
+# Copy to <name>.caddy, fill in, then run ./reload.sh
+# The app's container must join the `doclin-net` Docker network (external: true).
+example.com {
+	reverse_proxy <container-name>:<port>
+}
+
+www.example.com {
+	redir https://example.com{uri} permanent
+}

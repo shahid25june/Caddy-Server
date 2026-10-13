@@ -1,0 +1,31 @@
+{
+	email shahid25june@gmail.com
+
+	# On-demand TLS (SchoolMS custom domains, CA Platform firm subdomains): before getting a
+	# certificate for a hostname it has never seen, Caddy asks the apps whether it's theirs — so
+	# only real schools and firms get certificates, never random hostnames pointed at this server.
+	# Caddy allows one `ask` URL, so it points at the tls-ask site below, which asks each app.
+	on_demand_tls {
+		ask http://localhost:9100/
+	}
+}
+
+# Internal only (port 9100 isn't published): 200 if SchoolMS vouches for the hostname,
+# otherwise (or if SchoolMS is down) whatever CA Platform answers.
+http://localhost:9100 {
+	reverse_proxy schoolms-app:8081 {
+		rewrite /internal/tls/ask?{query}
+		@denied status 4xx 5xx
+		handle_response @denied {
+			rewrite * /internal/tls-ask?{query}
+			reverse_proxy caplatform:8080
+		}
+	}
+	handle_errors {
+		rewrite * /internal/tls-ask?{query}
+		reverse_proxy caplatform:8080
+	}
+}
+
+# One file per app or website
+import sites/*.caddy

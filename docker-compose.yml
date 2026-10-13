@@ -1,0 +1,33 @@
+# Edge proxy for every app on this server. Each site's routing lives in its own file under
+# config/sites/; adding or changing a site never needs a restart — see README.md.
+services:
+  caddy:
+    image: caddy:2
+    container_name: edge-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      # Whole folder (not single files) so `git pull` edits are seen by `caddy reload`
+      - ./config:/etc/caddy:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - edge
+
+networks:
+  edge:
+    # Every app joins this network; it already exists on the server
+    name: doclin-net
+    external: true
+
+volumes:
+  # Certificates and Let's Encrypt account, reused from when Caddy ran inside the Doclin project
+  caddy-data:
+    name: ${CADDY_DATA_VOLUME:-doclin_caddy-data}
+    external: true
+  caddy-config:
+    name: ${CADDY_CONFIG_VOLUME:-doclin_caddy-config}
+    external: true

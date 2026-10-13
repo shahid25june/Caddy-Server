@@ -1,0 +1,30 @@
+# SchoolMS
+(schoolms) {
+	# SchoolMS's internal TLS endpoints are only served on its port 8081, which isn't
+	# proxied — second guard so they can never be reached from outside.
+	respond /internal/* 404
+	reverse_proxy schoolms-app:8080
+}
+
+# Our own subdomains — normal automatic certificates.
+school.doctolin.com, ghims.doctolin.com {
+	import schoolms
+}
+
+# Every other hostname = a school's own custom domain (added in SchoolMS SuperAdmin; the
+# school points its DNS A record at this server). Nothing here changes when a school is added.
+# Named sites in any file take priority over this catch-all.
+https:// {
+	tls {
+		on_demand
+		# The school's own uploaded certificate (SuperAdmin → Schools → SSL), if any;
+		# SchoolMS answers 204 when there isn't one and Caddy gets a free one automatically.
+		get_certificate http http://schoolms-app:8081/internal/tls/certificate
+	}
+	import schoolms
+}
+
+# Plain-HTTP requests for those custom domains → HTTPS (named sites get this automatically).
+http:// {
+	redir https://{host}{uri} permanent
+}
