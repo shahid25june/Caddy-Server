@@ -1,9 +1,7 @@
 #!/bin/sh
-# Apply config changes without restarting Caddy. A config with errors is rejected and the
-# running config stays in place, so a typo can't take the other sites down.
+# Pull the latest config from GitHub into the running Caddy. Caddy applies it within a second
+# (--watch); a config with errors is rejected and the running one stays in place.
 set -e
-cd "$(dirname "$0")"
-git pull --ff-only 2>/dev/null || true
-docker exec edge-caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-docker exec edge-caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
-echo "Caddy reloaded."
+docker start -a edge-caddy-config
+sleep 2
+docker logs edge-caddy --since 5s 2>&1 | grep -iE 'error|load' || echo "Caddy config applied."

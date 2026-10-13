@@ -4,10 +4,16 @@ The server's single Caddy proxy (`edge-caddy`). It owns ports 80/443 and HTTPS f
 Doclin, Doclin staging, CA Platform, SchoolMS and standalone websites such as dratiyasana.com.
 
 ```
+docker-compose.yml      deploy this from its raw GitHub URL
 config/Caddyfile        global options + internal on-demand TLS check, imports everything below
 config/sites/*.caddy    one file per app or website
-reload.sh               pull, validate and apply changes with no restart
 ```
+
+On deploy, the `edge-caddy-config` container copies `config/` from this repository into a volume
+and exits; `edge-caddy` then serves it and watches it for changes.
+
+The repository must be public (it holds no secrets), or set `CONFIG_REPO` to
+`https://<user>:<token>@github.com/shahid25june/Caddy-Server.git` with a read-only token.
 
 ## Add a new site or domain
 
@@ -18,17 +24,16 @@ reload.sh               pull, validate and apply changes with no restart
        name: doclin-net
        external: true
    ```
-2. Copy `config/sites/_template.caddy.example` to `config/sites/<name>.caddy` and fill it in.
-3. Commit and push, then on the server:
+2. Copy `config/sites/_template.caddy.example` to `config/sites/<name>.caddy`, fill it in, push.
+3. Apply it — either redeploy this stack from the compose URL, or on the server run:
    ```
-   cd /path/to/edge-caddy && ./reload.sh
+   docker start -a edge-caddy-config
    ```
+   Caddy picks up the change within a second, without restarting. If the new file has an
+   error, Caddy logs it and keeps running the previous config.
 4. Point the domain's DNS A record at the server. Caddy gets the certificate on its own.
 
-No app is redeployed, nothing restarts, and other sites stay up. If the new file has an error,
-`reload.sh` stops and the running config is left untouched.
-
-To remove a site, delete its file and run `./reload.sh`.
+To remove a site, delete its file, push, and repeat step 3.
 
 ## Logs
 
@@ -36,30 +41,25 @@ To remove a site, delete its file and run `./reload.sh`.
 docker logs edge-caddy --tail 100
 ```
 
-## One-time move out of the Doclin project
+## First deploy (moving Caddy out of the Doclin project)
 
-Caddy used to be the `caddy` service inside Doclin's `docker-compose.yml`. This project takes over
-the same container name, network and certificate volumes, so no certificates are re-issued.
-Expect about 10–20 seconds of downtime for all sites during step 4.
+Only one container can use ports 80/443 and the name `edge-caddy`, so the old one must go first.
+All sites are down for the minute or so between steps 2 and 3.
 
-1. Clone this repository onto the server.
-2. Check the certificate volume names:
-   ```
-   docker volume ls | grep caddy
-   ```
-   The defaults are `doclin_caddy-data` and `doclin_caddy-config`. If yours differ, put them in a
-   `.env` file next to `docker-compose.yml`:
-   ```
-   CADDY_DATA_VOLUME=<name>_caddy-data
-   CADDY_CONFIG_VOLUME=<name>_caddy-config
-   ```
-3. In the Doclin folder, pull the version of `docker-compose.yml` without the `caddy` service:
-   `git pull origin main`. Don't run `docker compose down -v` there — it would delete the
-   app's volumes.
-4. Swap the containers:
+1. Make this repository public (or set `CONFIG_REPO` as above). Check that
+   `https://raw.githubusercontent.com/shahid25june/Caddy-Server/main/docker-compose.yml` opens in a
+   private browser window.
+2. Remove the old Caddy on the server:
    ```
    docker stop edge-caddy && docker rm edge-caddy
-   cd /path/to/edge-caddy && docker compose up -d
+   ```
+3. Deploy this stack from the compose URL above.
+4. Check it:
+   ```
+   docker ps --filter name=edge-caddy -a
+   docker logs edge-caddy-config
    docker logs edge-caddy --tail 50
    ```
-5. Open a couple of sites to confirm they load over HTTPS.
+
+Certificates are issued fresh into the new volume on first use, so each site's first visit after
+the move can take a few extra seconds.
