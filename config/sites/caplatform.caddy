@@ -5,8 +5,8 @@
 	reverse_proxy caplatform:8080
 }
 
-# Main site (platform, super-admin) and the default firm — normal automatic certificates.
-ca.doctolin.com, cagowhar.doctolin.com {
+# Main site (platform, super-admin), the default firm and the demo firm — normal automatic certificates.
+ca.doctolin.com, cagowhar.doctolin.com, cademo.doctolin.com {
 	import caplatform
 }
 
