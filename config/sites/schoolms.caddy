@@ -7,8 +7,14 @@
 }
 
 # Our own subdomains — normal automatic certificates.
-school.doctolin.com, ghims.doctolin.com {
+demo.school360pro.com, ghims.school360pro.com {
 	import schoolms
+}
+
+# Primary domain has no school of its own (yet) → the demo. Temporary (302) so a landing page
+# can take its place later without browsers having cached the redirect.
+school360pro.com, www.school360pro.com {
+	redir https://demo.school360pro.com{uri}
 }
 
 # Every other hostname = a school's own custom domain (added in SchoolMS SuperAdmin; the
