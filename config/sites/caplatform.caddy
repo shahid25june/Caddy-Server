@@ -16,6 +16,10 @@ gowharandco.com {
 	import caplatform
 }
 
+www.gowharandco.com {
+	redir https://gowharandco.com{uri} permanent
+}
+
 # Firm subdomains ({firm}.ca.doctolin.com) — a certificate on the first visit, once CA Platform
 # confirms the firm exists.
 *.ca.doctolin.com {
