@@ -1,0 +1,9 @@
+# School360Pro product site: static nginx container (D:\School Sites\School Management system\product-site)
+school360pro.com {
+	encode zstd gzip
+	reverse_proxy school360pro-site:80
+}
+
+www.school360pro.com {
+	redir https://school360pro.com{uri} permanent
+}
