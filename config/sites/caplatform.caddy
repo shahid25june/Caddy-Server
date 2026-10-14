@@ -10,8 +10,14 @@ ca.doctolin.com, cagowhar.doctolin.com, cademo.doctolin.com {
 	import caplatform
 }
 
+# Firms' own custom domains (added in the CA portal) — list each one here, otherwise it falls
+# into the SchoolMS catch-all and shows "isn't configured for any school".
+gowharandco.com {
+	import caplatform
+}
+
 # Firm subdomains ({firm}.ca.doctolin.com) — a certificate on the first visit, once CA Platform
-# confirms the firm exists. Firms' own custom domains still land in the SchoolMS catch-all.
+# confirms the firm exists.
 *.ca.doctolin.com {
 	tls {
 		on_demand
