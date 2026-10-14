@@ -11,10 +11,14 @@ demo.school360pro.com, ghims.school360pro.com {
 	import schoolms
 }
 
-# Primary domain has no school of its own (yet) → the demo. Temporary (302) so a landing page
-# can take its place later without browsers having cached the redirect.
-school360pro.com, www.school360pro.com {
-	redir https://demo.school360pro.com{uri}
+# Primary domain — the School360 Pro static site (placeholder until that site's container exists;
+# then replace `respond` with `reverse_proxy <container-name>:<port>`).
+school360pro.com {
+	respond "School360 Pro — coming soon" 200
+}
+
+www.school360pro.com {
+	redir https://school360pro.com{uri} permanent
 }
 
 # Every other hostname = a school's own custom domain (added in SchoolMS SuperAdmin; the
