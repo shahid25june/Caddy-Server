@@ -40,6 +40,9 @@ services:
       - caddy-etc:/etc/caddy:ro
       - caddy-data:/data
       - caddy-config:/config
+      # Static websites Caddy serves itself (no app container): upload the files to the host
+      # folder; changes show up immediately. See config/sites/school360pro.caddy.
+      - /docker/school360pro-site/site:/srv/school360pro:ro
     networks:
       - edge
 

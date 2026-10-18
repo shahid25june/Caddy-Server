@@ -1,7 +1,26 @@
-# School360Pro product site: static nginx container (D:\School Sites\School Management system\product-site)
+# School360Pro product site (D:\School Sites\School Management system\product-site): static
+# files served by Caddy itself. They live on the host in /docker/school360pro-site/site, mounted
+# at /srv/school360pro (see docker-compose.yml). To update the site, upload new files there;
+# no reload needed.
 school360pro.com {
+	root * /srv/school360pro
 	encode zstd gzip
-	reverse_proxy school360pro-site:80
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options SAMEORIGIN
+		-Server
+	}
+	header /assets/* Cache-Control "public, max-age=604800"
+
+	file_server
+
+	handle_errors 404 {
+		root * /srv/school360pro
+		rewrite * /404.html
+		file_server
+	}
 }
 
 www.school360pro.com {
