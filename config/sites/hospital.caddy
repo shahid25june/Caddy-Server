@@ -1,0 +1,16 @@
+# Hospital static site: files served by Caddy itself. They live on the host in
+# /docker/hospital-site/site, mounted at /srv/hospital (see docker-compose.yml). To update the
+# site, upload new files there; no reload needed.
+hospital.doctolin.com {
+	root * /srv/hospital
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options SAMEORIGIN
+		-Server
+	}
+
+	file_server
+}
